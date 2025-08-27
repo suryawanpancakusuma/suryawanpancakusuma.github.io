@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prinsip Kehati-hatian dalam Penggunaan AI</title>
+    <style>
+        :root {
+            --primary-color: #00ff88;
+            --secondary-color: rgba(0, 20, 40, 0.8);
+            --text-color: #e0f7fa;
+            --accent-color: #00ccff;
+            --warning-color: #ffaa00;
+            --success-color: #00ff88;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            background: #000;
+            overflow-x: hidden;
+            position: relative;
+        }
+        /* Digital Rain Background */
+        #background-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+        .hud-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 255, 136, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 10s linear infinite;
+            opacity: 0.3;
+        }
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff88, transparent);
+            animation: scan 3s linear infinite;
+        }
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+        /* Opening Digital Rain Effect */
+        #opening-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .opening-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            text-align: center;
+            text-shadow: 0 0 20px var(--primary-color);
+            opacity: 0;
+            animation: fadeIn 2s forwards;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        .rain-drop {
+            position: absolute;
+            top: -50px;
+            color: var(--primary-color);
+            font-size: 0.8rem;
+            text-shadow: 0 0 10px var(--primary-color);
+            animation: fall linear forwards;
+        }
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+        /* Video Opening Animation */
+        .video-opening {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .animation-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .daily-life-scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: all 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .scene-active {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .scene-icon {
+            font-size: 8rem;
+            margin-bottom: 30px;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 30px var(--primary-color));
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .scene-text {
+            color: white;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+        }
+        .scene-description {
+            color: var(--accent-color);
+            font-size: 1.2rem;
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+        .progress-bar {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            width: 0%;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+        .skip-intro {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .skip-intro:hover {
+            background: var(--primary-color);
+            color: #000;
+            transform: translateY(-2px);
+        }
+        /* Background Animation */
+        .bg-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            animation: particle-move 8s linear infinite;
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+        @keyframes particle-move {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+        /* Presentation Container */
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: none;
+            backdrop-filter: blur(1px);
+        }
+        .slide {
+            width: 100%;
+            height: 100%;
+            display: none;
+            padding: 40px;
+            box-sizing: border-box;
+            background: rgba(0, 10, 20, 0.85);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            box-shadow: inset 0 0 50px rgba(0, 255, 136, 0.1);
+            position: absolute;
+            top: 0;
+            left: 0;
+            overflow-y: auto;
+            animation: slideIn 0.6s ease-in-out;
+        }
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px) scale(0.95);
+                filter: blur(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+                filter: blur(0);
+            }
+        }
+        .slide h1 {
+            font-size: 2.8rem;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 0 0 20px var(--primary-color);
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+        .slide h2 {
+            font-size: 2.2rem;
+            color: var(--accent-color);
+            margin-bottom: 25px;
+            text-align: center;
+            text-shadow: 0 0 15px var(--accent-color);
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        .slide p, .slide li {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 15px;
+            max-width: 800px;
+            text-align: justify;
+            color: rgba(224, 247, 250, 0.9);
+        }
+        .principle-card {
+            background: rgba(0, 30, 60, 0.6);
+            border-left: 3px solid var(--primary-color);
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .principle-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+            border-left-color: var(--accent-color);
+        }
+        .principle-card h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+        }
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            background: rgba(0, 20, 40, 0.8);
+            padding: 15px 25px;
+            border-radius: 50px;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        .nav-btn {
+            padding: 12px 25px;
+            background: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+        .nav-btn:hover:not(:disabled) {
+            background: var(--primary-color);
+            color: #000;
+            box-shadow: 0 0 20px var(--primary-color);
+            transform: translateY(-2px);
+        }
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: #666;
+            color: #666;
+        }
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 20, 40, 0.8);
+            color: var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            backdrop-filter: blur(10px);
+            font-family: 'Courier New', monospace;
+        }
+        .highlight {
+            background: rgba(0, 255, 136, 0.2);
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: var(--primary-color);
+            font-weight: bold;
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+        .warning-box {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid var(--warning-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 0 15px rgba(255, 170, 0, 0.2);
+        }
+        .success-box {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--success-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+        }
+        ul {
+            max-width: 800px;
+            text-align: left;
+        }
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-shadow: 0 0 30px var(--primary-color);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            max-width: 1000px;
+            width: 100%;
+        }
+        @media (max-width: 768px) {
+            .slide {
+                padding: 20px;
+            }
+            .slide h1 {
+                font-size: 2.2rem;
+            }
+            .slide h2 {
+                font-size: 1.8rem;
+            }
+            .slide p, .slide li {
+                font-size: 1rem;
+            }
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+            .navigation {
+                bottom: 20px;
+                padding: 10px 20px;
+            }
+            .nav-btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+        /* Matursukseme Ending */
+        #matursukseme-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .matursukseme-text {
+            font-size: 3rem;
+            color: var(--primary-color);
+            text-align: center;
+            text-shadow: 0 0 20px var(--primary-color);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px var(--primary-color); }
+            to { text-shadow: 0 0 30px var(--primary-color), 0 0 50px var(--accent-color); }
+        }
+        .ending-rain-drop {
+            position: absolute;
+            top: -50px;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px var(--primary-color);
+            animation: endingFall linear forwards;
+        }
+        @keyframes endingFall {
+            to {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Opening Digital Rain Effect -->
+    <div id="opening-container">
+        <div class="opening-title" id="opening-title">SURYAWAN PANCAKUSUMA</div>
+    </div>
+    
+    <!-- Video Opening Animation -->
+    <div class="video-opening" id="video-opening">
+        <div class="bg-particles" id="bg-particles"></div>
+        <div class="animation-container">
+            <!-- Scene 1: Smart Home -->
+            <div class="daily-life-scene scene-active" id="scene-1">
+                <div class="scene-icon">🏠</div>
+                <div class="scene-text">Smart Home AI</div>
+                <div class="scene-description">
+                    AI mengatur pencahayaan, suhu, dan keamanan rumah secara otomatis<br>
+                    berdasarkan kebiasaan penghuni
+                </div>
+            </div>
+            <!-- Scene 2: Healthcare -->
+            <div class="daily-life-scene" id="scene-2">
+                <div class="scene-icon">🏥</div>
+                <div class="scene-text">AI di Kesehatan</div>
+                <div class="scene-description">
+                    Diagnosis dini penyakit melalui analisis citra medis<br>
+                    dan pemantauan kesehatan real-time
+                </div>
+            </div>
+            <!-- Scene 3: Transportation -->
+            <div class="daily-life-scene" id="scene-3">
+                <div class="scene-icon">🚗</div>
+                <div class="scene-text">Kendaraan Otonom</div>
+                <div class="scene-description">
+                    Mobil pintar yang mengemudi sendiri dengan aman<br>
+                    mengurangi kecelakaan lalu lintas
+                </div>
+            </div>
+            <!-- Scene 4: Education -->
+            <div class="daily-life-scene" id="scene-4">
+                <div class="scene-icon">📚</div>
+                <div class="scene-text">Pendidikan Personal</div>
+                <div class="scene-description">
+                    Pembelajaran yang disesuaikan dengan gaya<br>
+                    dan kecepatan belajar setiap siswa
+                </div>
+            </div>
+            <!-- Scene 5: Finance -->
+            <div class="daily-life-scene" id="scene-5">
+                <div class="scene-icon">💰</div>
+                <div class="scene-text">Keuangan Digital</div>
+                <div class="scene-description">
+                    Deteksi penipuan, manajemen investasi,<br>
+                    dan layanan perbankan personal 24/7
+                </div>
+            </div>
+            <!-- Scene 6: Entertainment -->
+            <div class="daily-life-scene" id="scene-6">
+                <div class="scene-icon">🎮</div>
+                <div class="scene-text">Hiburan Interaktif</div>
+                <div class="scene-description">
+                    Konten yang direkomendasikan secara personal<br>
+                    dan pengalaman gaming yang adaptif
+                </div>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <button class="skip-intro" onclick="skipVideo()">SKIP →</button>
+    </div>
+    
+    <!-- Background Canvas -->
+    <canvas id="background-canvas"></canvas>
+    <div class="hud-overlay">
+        <div class="grid-overlay"></div>
+        <div class="scan-line"></div>
+    </div>
+    
+    <!-- Presentation -->
+    <div class="presentation-container" id="presentation-container">
+        <div class="slide-counter">
+            <span id="current-slide">1</span> / <span id="total-slides">9</span>
+        </div>
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="icon">🤖</div>
+            <h1>Prinsip Kehati-hatian dalam Penggunaan AI</h1>
+            <p style="text-align: center; font-size: 1.5rem; color: var(--accent-color); text-shadow: 0 0 15px var(--accent-color);">
+                Menuju Teknologi yang Bertanggung Jawab dan Terpercaya
+            </p>
+            <p style="text-align: center; margin-top: 40px; font-style: italic;">
+                Dalam era kecerdasan artifisial yang terus berkembang, kehati-hatian adalah kunci utama untuk masa depan yang aman.
+            </p>
+        </div>
+        <!-- Slide 2: Introduction -->
+        <div class="slide">
+            <h2>Mengapa Prinsip Kehati-hatian Penting?</h2>
+            <div class="warning-box">
+                <strong>Konteks:</strong> AI memiliki potensi transformatif yang besar, namun juga membawa risiko signifikan jika tidak dikelola dengan baik.
+            </div>
+            <ul>
+                <li><span class="highlight">Dampak Sosial</span>: AI dapat memperkuat bias sosial yang ada atau menciptakan ketimpangan baru</li>
+                <li><span class="highlight">Privasi Data</span>: Penggunaan data pribadi dalam AI memerlukan perlindungan yang ketat</li>
+                <li><span class="highlight">Akuntabilitas</span>: Keputusan AI yang merugikan harus dapat dilacak pertanggungjawabannya</li>
+                <li><span class="highlight">Transparansi</span>: Pengguna berhak mengetahui bagaimana AI membuat keputusan yang mempengaruhi mereka</li>
+            </ul>
+        </div>
+        <!-- Slide 3: Fairness -->
+        <div class="slide">
+            <h2>Prinsip 1: Keadilan dan Penanganan Bias</h2>
+            <div class="principle-card">
+                <h3>🎯 Tujuan</h3>
+                <p>Memastikan AI tidak mendiskriminasi kelompok tertentu berdasarkan ras, gender, usia, atau karakteristik lainnya.</p>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3>Tantangan Utama:</h3>
+                    <ul>
+                        <li>Data training yang bias terhadap kelompok tertentu</li>
+                        <li>Algoritma yang tidak terdeteksi biasnya</li>
+                        <li>Kurangnya representasi dalam tim pengembang</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Solusi:</h3>
+                    <ul>
+                        <li>Audit bias secara berkala menggunakan metrik keadilan</li>
+                        <li>Diversifikasi dataset dan tim pengembang</li>
+                        <li>Implementasi teknik fairness-aware machine learning</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- Slide 4: Transparency -->
+        <div class="slide">
+            <h2>Prinsip 2: Transparansi dan Dapat Dijelaskan</h2>
+            <div class="success-box">
+                <strong>Definisi:</strong> AI harus dapat menjelaskan proses pengambilan keputusannya secara jelas dan dipahami oleh manusia.
+            </div>
+            <div class="principle-card">
+                <h3>🌟 Manfaat Transparansi:</h3>
+                <ul>
+                    <li><strong>Kepercayaan Pengguna</strong>: Membangun kepercayaan antara AI dan pengguna</li>
+                    <li><strong>Deteksi Kesalahan</strong>: Memudahkan identifikasi dan perbaikan kesalahan sistem</li>
+                    <li><strong>Kepatuhan Regulasi</strong>: Memenuhi persyaratan regulasi yang semakin ketat</li>
+                </ul>
+            </div>
+            <p><strong>Contoh Penerapan:</strong> Dalam sistem diagnostik medis, AI harus dapat menjelaskan faktor-faktor yang menyebabkan diagnosis tertentu, bukan hanya memberikan hasil tanpa konteks.</p>
+        </div>
+        <!-- Slide 5: Accountability -->
+        <div class="slide">
+            <h2>Prinsip 3: Pertanggungjawaban dan Tata Kelola</h2>
+            <div class="warning-box">
+                <strong>Pertanyaan Kritis:</strong> Siapa yang bertanggung jawab ketika AI membuat kesalahan?
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3>Struktur Akuntabilitas:</h3>
+                    <ul>
+                        <li><strong>Tim Pengembang</strong>: Bertanggung jawab atas desain dan validasi sistem</li>
+                        <li><strong>Manajemen</strong>: Bertanggung jawab atas kebijakan dan implementasi</li>
+                        <li><strong>Organisasi</strong>: Bertanggung jawab atas dampak sosial dari AI yang digunakan</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Implementasi:</h3>
+                    <ul>
+                        <li>Pembentukan komite etik AI</li>
+                        <li>Dokumentasi lengkap proses pengembangan</li>
+                        <li>Asuransi untuk risiko AI</li>
+                        <li>Prosedur penanganan keluhan pengguna</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- Slide 6: Privacy -->
+        <div class="slide">
+            <h2>Prinsip 4: Privasi dan Keamanan Data</h2>
+            <div class="principle-card">
+                <h3>🔒 Pendekatan Privasi-dari-Awal (Privacy-by-Design)</h3>
+                <p>Membangun sistem AI dengan perlindungan privasi sebagai fitur utama, bukan tambahan.</p>
+            </div>
+            <ul>
+                <li><span class="highlight">Minimisasi Data</span>: Hanya mengumpulkan data yang benar-benar diperlukan</li>
+                <li><span class="highlight">Anonimisasi</span>: Menggunakan teknik seperti differential privacy</li>
+                <li><span class="highlight">Konsentras</span>: Memastikan pengguna memberikan persetujuan yang jelas dan informatif</li>
+                <li><span class="highlight">Keamanan</strong>: Proteksi terhadap serangan dan kebocoran data</li>
+            </ul>
+            <div class="success-box">
+                <strong>Contoh Baik:</strong> Apple menggunakan teknik federated learning untuk meningkatkan Siri tanpa mengirim data pengguna ke server pusat.
+            </div>
+        </div>
+        <!-- Slide 7: Human Oversight -->
+        <div class="slide">
+            <h2>Prinsip 5: Pengawasan Manusia (Human-in-the-Loop)</h2>
+            <div class="principle-card">
+                <h3>🤝 Pendekatan Kolaboratif</h3>
+                <p>AI tidak sepenuhnya otonom - selalu ada keterlibatan manusia dalam proses pengambilan keputusan kritis.</p>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3>Kasus yang Memerlukan Pengawasan:</h3>
+                    <ul>
+                        <li>Keputusan hukum dan peradilan</li>
+                        <li>Diagnosis medis</li>
+                        <li>Perekrutan dan HR</li>
+                        <li>Pemberian pinjaman atau kredit</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Mekanisme Pengawasan:</h3>
+                    <ul>
+                        <li>Review manual untuk keputusan high-impact</li>
+                        <li>Override button untuk kasus spesial</li>
+                        <li>Continuous monitoring dan feedback loop</li>
+                        <li>Training berkelanjutan untuk operator</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- Slide 8: Implementation Framework -->
+        <div class="slide">
+            <h2>Framework Implementasi Prinsip Kehati-hatian</h2>
+            <div class="two-column">
+                <div>
+                    <h3>Fase 1: Perencanaan</h3>
+                    <ul>
+                        <li>Analisis risiko AI</li>
+                        <li>Penetapan prinsip etik organisasi</li>
+                        <li>Pelatihan tim</li>
+                    </ul>
+                    <h3>Fase 2: Pengembangan</h3>
+                    <ul>
+                        <li>Testing bias dan fairness</li>
+                        <li>Dokumentasi transparansi</li>
+                        <li>Security audit</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Fase 3: Deployment</h3>
+                    <ul>
+                        <li>Phased rollout</li>
+                        <li>Monitoring real-time</li>
+                        <li>Feedback mechanism</li>
+                    </ul>
+                    <h3>Fase 4: Evaluasi</h3>
+                    <ul>
+                        <li>Audit berkala</li>
+                        <li>Pembaruan berkelanjutan</li>
+                        <li>Learning dari kasus</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- Slide 9: Conclusion -->
+        <div class="slide">
+            <h2>Kesimpulan dan Langkah Selanjutnya</h2>
+            <div class="success-box">
+                <h3>🎯 Tujuan Akhir</h3>
+                <p>Membangun ekosistem AI yang tidak hanya canggih, tetapi juga bertanggung jawab, adil, dan bermanfaat bagi seluruh masyarakat.</p>
+            </div>
+            <div class="two-column">
+                <div>
+                    <h3>Untuk Organisasi:</h3>
+                    <ul>
+                        <li>Bentuk tim AI ethics</li>
+                        <li>Investasi dalam pelatihan</li>
+                        <li>Kolaborasi dengan akademisi dan regulator</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Untuk Individu:</h3>
+                    <ul>
+                        <li>Tingkatkan literasi AI</li>
+                        <li>Tanyakan tentang etika AI di tempat kerja</li>
+                        <li>Dukung transparansi dari penyedia layanan</li>
+                    </ul>
+                </div>
+            </div>
+            <p style="text-align: center; font-size: 1.4rem; margin-top: 40px; color: var(--primary-color); font-style: italic;">
+                <strong>Ingat:</strong> Teknologi yang baik adalah teknologi yang memperkuat kemanusiaan, bukan melemahkannya.
+            </p>
+        </div>
+        <div class="navigation">
+            <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)">← PREV</button>
+            <button class="nav-btn" id="next-btn" onclick="changeSlide(1)">NEXT →</button>
+        </div>
+    </div>
+    
+    <!-- Matursukseme Ending -->
+    <div id="matursukseme-container">
+        <div class="matursukseme-text" id="matursukseme-text">MATURSUKSEME</div>
+    </div>
+    
+    <script>
+        // Opening Digital Rain Effect
+        function createOpeningRain() {
+            const container = document.getElementById('opening-container');
+            const title = document.getElementById('opening-title');
+            const letters = "SURYAWAN PANCAKUSUMA";
+            
+            // Create rain drops for the title
+            for (let i = 0; i < 200; i++) {
+                setTimeout(() => {
+                    const drop = document.createElement('div');
+                    drop.className = 'rain-drop';
+                    drop.textContent = letters[Math.floor(Math.random() * letters.length)];
+                    
+                    // Random horizontal position
+                    const leftPos = Math.random() * 100;
+                    drop.style.left = `${leftPos}%`;
+                    
+                    // Random animation duration (1-3 seconds)
+                    const duration = 1 + Math.random() * 2;
+                    drop.style.animationDuration = `${duration}s`;
+                    
+                    // Random delay
+                    const delay = Math.random() * 2;
+                    drop.style.animationDelay = `${delay}s`;
+                    
+                    container.appendChild(drop);
+                    
+                    // Remove element after animation completes
+                    setTimeout(() => {
+                        drop.remove();
+                    }, (duration + delay) * 1000);
+                }, i * 50);
+            }
+            
+            // Show title after a short delay
+            setTimeout(() => {
+                title.style.opacity = 1;
+            }, 1000);
+        }
+        
+        // Video Opening Animation
+        let currentScene = 1;
+        const totalScenes = 6;
+        let videoInterval;
+        let progressInterval;
+        let videoProgress = 0;
+        // Initialize background particles
+        function createBackgroundParticles() {
+            const particlesContainer = document.getElementById('bg-particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (6 + Math.random() * 4) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+        // Scene transitions
+        function nextScene() {
+            if (currentScene < totalScenes) {
+                document.getElementById(`scene-${currentScene}`).classList.remove('scene-active');
+                currentScene++;
+                document.getElementById(`scene-${currentScene}`).classList.add('scene-active');
+            } else {
+                endVideo();
+            }
+        }
+        // Update progress bar
+        function updateProgress() {
+            videoProgress += 100 / (totalScenes * 5); // 5 seconds per scene
+            document.getElementById('progress-fill').style.width = videoProgress + '%';
+        }
+        // Start video animation
+        function startVideo() {
+            createBackgroundParticles();
+            videoInterval = setInterval(nextScene, 5000);
+            progressInterval = setInterval(updateProgress, 100);
+            // Auto end after all scenes
+            setTimeout(() => {
+                if (document.getElementById('video-opening').style.display !== 'none') {
+                    endVideo();
+                }
+            }, totalScenes * 5000 + 1000);
+        }
+        // End video and show presentation
+        function endVideo() {
+            clearInterval(videoInterval);
+            clearInterval(progressInterval);
+            document.getElementById('video-opening').style.display = 'none';
+            document.getElementById('presentation-container').style.display = 'block';
+            // Start background animation
+            startBackgroundAnimation();
+        }
+        // Skip video function
+        function skipVideo() {
+            endVideo();
+        }
+        // Digital Rain Background Animation
+        const bgCanvas = document.getElementById('background-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+
+        // Set canvas size
+        function resizeBgCanvas() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+        }
+
+        resizeBgCanvas();
+        window.addEventListener('resize', resizeBgCanvas);
+
+        // Digital rain effect
+        const fontSize = 14;
+        const columns = bgCanvas.width / fontSize;
+        const drops = [];
+
+        for (let i = 0; i < columns; i++) {
+            drops[i] = Math.floor(Math.random() * -100);
+        }
+
+        function drawDigitalRain() {
+            bgCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+            bgCtx.fillStyle = '#00ff88';
+            bgCtx.font = `${fontSize}px monospace`;
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = String.fromCharCode(Math.random() * 128);
+                bgCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > bgCanvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+
+            requestAnimationFrame(drawDigitalRain);
+        }
+
+        drawDigitalRain();
+
+        // Background animation for presentation (neural network)
+        function startBackgroundAnimation() {
+            // This is already handled by the digital rain above
+        }
+
+        // Presentation functionality
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+            // Update navigation buttons
+            document.getElementById('prev-btn').disabled = currentSlide === 0;
+            document.getElementById('next-btn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            if ((direction === -1 && currentSlide > 0) ||
+                (direction === 1 && currentSlide < totalSlides - 1)) {
+                showSlide(currentSlide + direction);
+                // Check if we've reached the final slide
+                if (currentSlide + direction === totalSlides - 1) {
+                    // Show ending screen only on user interaction
+                    showEndingScreen();
+                }
+            }
+        }
+
+        // Show ending screen on user interaction
+        function showEndingScreen() {
+            // Wait for user interaction to show ending
+            const showEnding = () => {
+                document.removeEventListener('keydown', showEnding);
+                document.removeEventListener('click', showEnding);
+                document.removeEventListener('mousemove', showEnding);
+                showMatursukseme();
+            };
+            
+            document.addEventListener('keydown', showEnding);
+            document.addEventListener('click', showEnding);
+            document.addEventListener('mousemove', showEnding);
+        }
+
+        // Show matursukseme with rain effect
+        function showMatursukseme() {
+            const container = document.getElementById('matursukseme-container');
+            const textElement = document.getElementById('matursukseme-text');
+            
+            // Hide presentation
+            document.getElementById('presentation-container').style.display = 'none';
+            
+            // Show matursukseme container
+            container.style.display = 'flex';
+            
+            // Create falling rain drops for the text
+            const letters = "MATURSUKSEME";
+            const containerRect = container.getBoundingClientRect();
+            
+            // Create rain drops for each letter
+            for (let i = 0; i < 200; i++) {
+                setTimeout(() => {
+                    const drop = document.createElement('div');
+                    drop.className = 'ending-rain-drop';
+                    drop.textContent = letters[Math.floor(Math.random() * letters.length)];
+                    
+                    // Random horizontal position
+                    const leftPos = Math.random() * 100;
+                    drop.style.left = `${leftPos}%`;
+                    
+                    // Random animation duration (1-3 seconds)
+                    const duration = 1 + Math.random() * 2;
+                    drop.style.animationDuration = `${duration}s`;
+                    
+                    // Random delay
+                    const delay = Math.random() * 2;
+                    drop.style.animationDelay = `${delay}s`;
+                    
+                    container.appendChild(drop);
+                    
+                    // Remove element after animation completes
+                    setTimeout(() => {
+                        drop.remove();
+                    }, (duration + delay) * 1000);
+                }, i * 50);
+            }
+            
+            // Keep the text visible for a while
+            setTimeout(() => {
+                container.style.display = 'none';
+            }, 5000);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (document.getElementById('opening-container').style.display !== 'none') {
+                // Skip opening when any key is pressed
+                endOpening();
+            } else if (document.getElementById('video-opening').style.display !== 'none') {
+                if (e.key === 'Escape' || e.key === ' ') {
+                    skipVideo();
+                }
+            } else {
+                if (e.key === 'ArrowLeft') changeSlide(-1);
+                if (e.key === 'ArrowRight') changeSlide(1);
+            }
+        });
+
+        // End opening sequence
+        function endOpening() {
+            document.getElementById('opening-container').style.display = 'none';
+            document.getElementById('video-opening').style.display = 'flex';
+            // Start video sequence
+            startVideo();
+        }
+
+        // Mouse click to end opening
+        document.addEventListener('click', function() {
+            if (document.getElementById('opening-container').style.display !== 'none') {
+                endOpening();
+            }
+        });
+
+        // Start opening sequence
+        window.addEventListener('load', function() {
+            createOpeningRain();
+            // Auto-end opening after 5 seconds if no interaction
+            setTimeout(() => {
+                if (document.getElementById('opening-container').style.display !== 'none') {
+                    endOpening();
+                }
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
